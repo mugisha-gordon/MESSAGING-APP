@@ -2,12 +2,14 @@ package com.luminara.connect.service;
 
 import com.luminara.connect.model.GiftType;
 import com.luminara.connect.model.User;
+import com.luminara.connect.model.WalletTransaction;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 @Service
 public class WalletService {
@@ -18,6 +20,7 @@ public class WalletService {
             new GiftType("CHOCOLATE", "Luxury Chocolate Box", new BigDecimal("5.00")),
             new GiftType("STAR", "Golden Star", new BigDecimal("10.00"))
     );
+    private final List<WalletTransaction> transactions = new CopyOnWriteArrayList<>();
 
     public WalletService(UserService userService) {
         this.userService = userService;
@@ -29,6 +32,7 @@ public class WalletService {
         ensureBalance(sender, amount);
         sender.setWalletBalance(sender.getWalletBalance().subtract(amount));
         receiver.setWalletBalance(receiver.getWalletBalance().add(amount));
+        transactions.add(new WalletTransaction("TRANSFER", fromUserId, toUserId, amount, "Peer transfer"));
         return sender;
     }
 
@@ -46,7 +50,15 @@ public class WalletService {
         ensureBalance(sender, gift.price());
         sender.setWalletBalance(sender.getWalletBalance().subtract(gift.price()));
         receiver.setWalletBalance(receiver.getWalletBalance().add(gift.price()));
+        transactions.add(new WalletTransaction("GIFT", fromUserId, toUserId, gift.price(), "Gift: " + gift.title()));
         return sender;
+    }
+
+    public List<WalletTransaction> transactionsForUser(String userId) {
+        userService.getById(userId);
+        return transactions.stream()
+                .filter(tx -> userId.equals(tx.getFromUserId()) || userId.equals(tx.getToUserId()))
+                .toList();
     }
 
     private void ensureBalance(User sender, BigDecimal amount) {

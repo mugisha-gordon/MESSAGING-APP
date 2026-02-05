@@ -43,5 +43,7 @@ class LuminaraConnectApplicationTests {
         assertEquals(new BigDecimal("20.00"), alice.getWalletBalance());
         assertEquals(new BigDecimal("10.00"), bob.getWalletBalance());
         assertEquals(2, chat.getMessages().size());
+        assertEquals(2, walletService.transactionsForUser(alice.getId()).size());
+        assertEquals(2, walletService.transactionsForUser(bob.getId()).size());
     }
 }

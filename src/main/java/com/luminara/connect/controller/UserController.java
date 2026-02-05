@@ -29,6 +29,11 @@ public class UserController {
         return userService.listUsers();
     }
 
+    @GetMapping("/{userId}")
+    public User getUser(@PathVariable String userId) {
+        return userService.getById(userId);
+    }
+
     @PostMapping("/wallet/top-up")
     public User topUp(@Valid @RequestBody TopUpRequest request) {
         return userService.topUp(request.userId(), request.amount());

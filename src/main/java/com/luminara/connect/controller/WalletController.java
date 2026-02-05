@@ -4,6 +4,7 @@ import com.luminara.connect.dto.SendGiftRequest;
 import com.luminara.connect.dto.TransferRequest;
 import com.luminara.connect.model.GiftType;
 import com.luminara.connect.model.User;
+import com.luminara.connect.model.WalletTransaction;
 import com.luminara.connect.service.WalletService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
@@ -33,5 +34,10 @@ public class WalletController {
     @PostMapping("/gifts/send")
     public User sendGift(@Valid @RequestBody SendGiftRequest request) {
         return walletService.sendGift(request.fromUserId(), request.toUserId(), request.giftCode());
+    }
+
+    @GetMapping("/transactions/{userId}")
+    public List<WalletTransaction> userTransactions(@PathVariable String userId) {
+        return walletService.transactionsForUser(userId);
     }
 }
