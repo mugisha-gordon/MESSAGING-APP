@@ -1,0 +1,14 @@
+<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Wallet - Luminara</title><link rel='stylesheet' href='/css/styles.css'><script defer src='/js/app.js'></script></head>
+<body><div class='layout'><aside class='sidebar'><div class='brand'>Luminara Connect ✨</div><nav class='nav'><a href='/auth.html'>Sign In / Sign Up</a><a href='/index.html'>Dashboard</a><a href='/chats.html'>Chats</a><a class='active' href='/wallet.html'>Wallet</a><a href='/gifts.html'>Gifts</a><a href='javascript:void(0)' onclick='logout()'>Logout</a></nav></aside>
+<main class='content'><h1>Wallet Studio</h1><div class='grid two'>
+<section class='card'><h3>Top-up</h3><label>User</label><select id='topUser' class='user-select'></select><label>Amount</label><input id='topAmount' type='number' step='0.01'><button id='topBtn'>Top up</button><small id='topMsg'></small><hr><h3>Transfer</h3><label>From</label><select id='from' class='user-select'></select><label>To</label><select id='to' class='user-select'></select><label>Amount</label><input id='amount' type='number' step='0.01'><button class='secondary' id='sendMoney'>Transfer</button><small id='transferMsg'></small></section>
+<section class='card'><h3>Transactions</h3><label>User</label><select id='txUser' class='user-select'></select><button id='loadTx'>Load Timeline</button><div id='txList' class='list'></div></section>
+</div></main></div>
+<script>
+requireAuth();
+async function renderTx(){if(!txUser.value){txList.innerHTML='<small>Select user.</small>';return;}const tx=await api.get('/api/wallet/transactions/'+txUser.value);txList.innerHTML=tx.map(t=>`<div class='item'><b>${t.type}</b> $${t.amount}<br><small>${t.description}</small><br><small>${t.createdAt}</small></div>`).join('')||'<small>No transactions.</small>';} 
+topBtn.onclick=async()=>{try{await api.post('/api/users/wallet/top-up',{userId:topUser.value,amount:Number(topAmount.value)});showMsg('topMsg','Top-up complete');}catch(e){showMsg('topMsg',e.message,true)}};
+sendMoney.onclick=async()=>{try{await api.post('/api/wallet/transfer',{fromUserId:from.value,toUserId:to.value,amount:Number(amount.value)});showMsg('transferMsg','Transfer successful');renderTx();}catch(e){showMsg('transferMsg',e.message,true)}};
+document.getElementById('loadTx').onclick=renderTx;
+refreshUsers();
+</script></body></html>

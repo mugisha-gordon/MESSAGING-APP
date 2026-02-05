@@ -1,0 +1,15 @@
+<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Chats - Luminara</title><link rel='stylesheet' href='/css/styles.css'><script defer src='/js/app.js'></script></head>
+<body><div class='layout'><aside class='sidebar'><div class='brand'>Luminara Connect ✨</div><nav class='nav'><a href='/auth.html'>Sign In / Sign Up</a><a href='/index.html'>Dashboard</a><a class='active' href='/chats.html'>Chats</a><a href='/wallet.html'>Wallet</a><a href='/gifts.html'>Gifts</a><a href='javascript:void(0)' onclick='logout()'>Logout</a></nav></aside>
+<main class='content'><h1>Conversations</h1><div class='grid two'>
+<section class='card'><h3>Create Chat</h3><label>Participant A</label><select id='u1' class='user-select'></select><label>Participant B</label><select id='u2' class='user-select'></select><button id='mk'>Start Chat</button><small id='mkMsg'></small><label>Chat</label><select id='chat'></select><label>Sender</label><select id='sender' class='user-select'></select><label>Message</label><textarea id='msg'></textarea><button class='secondary' id='send'>Send</button><small id='sendMsg'></small></section>
+<section class='card'><h3>Chat Timeline</h3><div id='timeline' class='list'></div></section>
+</div></main></div>
+<script>
+requireAuth();
+async function loadChats(){const chats=await api.get('/api/chats');chat.innerHTML='<option value="">Select chat</option>'+chats.map(c=>`<option value='${c.id}'>${c.id.slice(0,8)} • ${c.participantIds.length} people</option>`).join('');}
+async function loadTimeline(){if(!chat.value){timeline.innerHTML='<small>Select chat.</small>';return;}const c=await api.get('/api/chats/'+chat.value);timeline.innerHTML=c.messages.map(m=>`<div class='item'><b>${m.senderId.slice(0,6)}</b><br>${m.content}<br><small>${m.sentAt}</small></div>`).join('')||'<small>No messages.</small>';} 
+mk.onclick=async()=>{try{await api.post('/api/chats',{participantIds:[u1.value,u2.value]});showMsg('mkMsg','Chat created');loadChats();}catch(e){showMsg('mkMsg',e.message,true)}};
+send.onclick=async()=>{try{await api.post('/api/chats/'+chat.value+'/messages',{senderId:sender.value,content:msg.value});showMsg('sendMsg','Sent');msg.value='';loadTimeline();}catch(e){showMsg('sendMsg',e.message,true)}};
+chat.onchange=loadTimeline;
+refreshUsers();loadChats();
+</script></body></html>
